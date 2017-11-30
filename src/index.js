@@ -1,7 +1,6 @@
 import _ from 'lodash';
-
-let root;
-let svgNS;
+import * as SVG from './SVG';
+import Flower from './Flower';
 
 const camera = {
   center: [0, 0],
@@ -11,17 +10,10 @@ const camera = {
 
 const entities = [];
 
-function component({a, b}, ...args) {
-  var element = document.createElement('div');
-  element.innerHTML = _.join([a, b, ...args], ' ');
-  return element;
-}
-
 function onDOMContentLoaded() {
   document.removeEventListener('DOMContentLoaded', onDOMContentLoaded);
 
-  root = document.getElementById('svg-root');
-  svgNS = root.namespaceURI;
+  SVG.init(document.getElementById('svg-root'));
 
   // Listen for window resize events to to trigger a camera update
   window.addEventListener('resize', () => {
@@ -56,6 +48,7 @@ function render(timestamp) {
   if (camera.dirty) {
     camera.dirty = false;
     let x, y, w, h, ratio;
+    const root = SVG.getRoot();
     const viewportRect = root.getBoundingClientRect();
     if (viewportRect.width > viewportRect.height) {
       ratio = viewportRect.width / viewportRect.height;
@@ -71,52 +64,6 @@ function render(timestamp) {
     root.setAttribute('viewBox', [x, y, w, h].join(' '))
   }
   requestAnimationFrame(render)
-}
-
-class Flower {
-  constructor(petalCount) {
-
-    // Create elements
-    this.root = document.createElementNS(svgNS, 'g');
-    this.petals = _.range(petalCount).map(i => {
-      const petal = document.createElementNS(svgNS, 'ellipse');
-      this.root.appendChild(petal);
-      return petal;
-    });
-    this.center = document.createElementNS(svgNS, 'circle');
-    this.root.appendChild(this.center);
-    root.appendChild(this.root);
-
-    this.petalCount = petalCount;
-    this.spin = 0;
-    this.rpm = 0;
-
-    this.dirty = true;
-  }
-
-  render(deltaT) {
-    if (this.rpm != 0) {
-      const rpDeltaT = this.rpm * deltaT / 60000;
-      this.spin = (this.spin + 360 * rpDeltaT) % 360;
-      this.dirty = true;
-    }
-
-    this.root.setAttribute(`transform`,`translate(${this.x} ${this.y})`);
-
-    this.petals.forEach((petal, i) => {
-      petal.setAttribute('cx',0);
-      petal.setAttribute('cy',-10);
-      petal.setAttribute('rx', 2.5 + 2.5 * (8 / this.petalCount));
-      petal.setAttribute('ry',10);
-      petal.setAttribute('fill','url(#Gradient2)');
-      petal.setAttribute('transform',`rotate(${this.spin + (i * 360 / this.petalCount)})`);
-    });
-
-    this.center.setAttribute('cx',0);
-    this.center.setAttribute('cy',0);
-    this.center.setAttribute('r',5);
-    this.center.setAttribute('fill','yellow');
-  }
 }
 
 document.addEventListener('DOMContentLoaded', onDOMContentLoaded);
