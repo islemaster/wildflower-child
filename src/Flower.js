@@ -44,14 +44,24 @@ export default class Flower {
       petal.setAttribute('stroke-opacity', strokeOpacity);
       return petal;
     });
+    // Push petals in a random order to mask z-order weirdness
     _.shuffle(this.petals).forEach(petal => this.root.appendChild(petal));
+
+    const centerColor = _.sample([
+      randomColor({hue: 'yellow'}),
+      randomColor({hue: 'orange'}),
+    ]);
     this.center = SVG.create('circle');
-    this.center.setAttribute('fill', randomColor({hue: 'yellow'}));
+    this.center.setAttribute('fill', centerColor);
     this.center.setAttribute('stroke', strokeColor);
     this.center.setAttribute('stroke-opacity', strokeOpacity);
+
+    this.center.setAttribute('cx',0);
+    this.center.setAttribute('cy',0);
+    this.center.setAttribute('r', 3 + 3 * Math.random());
+
     this.root.appendChild(this.center);
     SVG.addToRoot(this.root);
-
 
     this.petalCount = petalCount;
     this.spin = 0;
@@ -76,9 +86,5 @@ export default class Flower {
       petal.setAttribute('ry',10);
       petal.setAttribute('transform',`rotate(${this.spin + (i * 360 / this.petalCount)})`);
     });
-
-    this.center.setAttribute('cx',0);
-    this.center.setAttribute('cy',0);
-    this.center.setAttribute('r',5);
   }
 }
