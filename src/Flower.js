@@ -96,6 +96,9 @@ class Genome {
 }
 Genome.LENGTH = 16;
 
+// Might get applied either direction
+const MAX_RPM = 60;
+
 export default class Flower {
   constructor(genome = new Genome()) {
     this.dirty = true;
@@ -105,6 +108,7 @@ export default class Flower {
     this.y = 0;
     this.spin = 0;
     this.rpm = 0;
+    this.maxRpm = MAX_RPM;
     this._hovered = false;
 
     this.gradient = SVG.create('linearGradient', {
@@ -180,6 +184,11 @@ export default class Flower {
 
   onMouseEnter() {
     this._hovered = true;
+    // If not spinning pick a new direction
+    if (this.rpm === 0) {
+      this.maxRpm = Math.random() < 0.5 ? MAX_RPM : -MAX_RPM;
+    }
+    this.dirty = true;
   }
 
   onMouseLeave() {
@@ -192,6 +201,9 @@ export default class Flower {
 
     this.root.classList.add('grabbed');
     this.root.classList.remove('grabbable');
+
+    // Re-append element so it sorts above other elements while dragging
+    SVG.addToRoot(this.root);
 
     document.addEventListener('mousemove', this._onDrag);
     document.addEventListener('mouseup', this._onDrop);
@@ -213,6 +225,16 @@ export default class Flower {
   }
 
   render(deltaT) {
+    // Spin when hovered
+    if (this._hovered) {
+      this.rpm += (this.maxRpm - this.rpm) / 3;
+    } else {
+      this.rpm = this.rpm * 0.9;
+      if (Math.abs(this.rpm) < 0.5) {
+        this.rpm = 0;
+      }
+    }
+
     if (this.rpm != 0) {
       const rpDeltaT = this.rpm * deltaT / 60000;
       this.spin = (this.spin + 360 * rpDeltaT) % 360;
