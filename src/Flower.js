@@ -18,11 +18,23 @@ class Genome {
   }
 
   gene(startIndex) {
-    return parseInt(this._genes.slice(startIndex, startIndex+2), 16);
+    return parseInt(this._genes.substr(startIndex, 2), 16);
   }
 
   geneNormal(startIndex) {
     return this.gene(startIndex) / 0xFF;
+  }
+
+  mix(otherGenome) {
+    const leftString = this._genes;
+    const rightString = otherGenome._genes;
+    return new Genome(
+      _.range(Genome.LENGTH / 2).map(i => {
+        return Math.random() <= 0.5 ?
+          leftString.substr(i * 2, 2) :
+          rightString.substr(i * 2, 2);
+      }).join('')
+    )
   }
 
   // Genes 0-1
@@ -89,6 +101,8 @@ export default class Flower {
     this.dirty = true;
     this.genome = genome;
     this.petalCount = genome.petalCount();
+    this.x = 0;
+    this.y = 0;
     this.spin = 0;
     this.rpm = 0;
 

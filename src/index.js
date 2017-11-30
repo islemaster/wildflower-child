@@ -12,22 +12,26 @@ function onDOMContentLoaded() {
 
   entities.push(new Camera());
 
-  const flowerCount = 25;
-  for (let i = 0; i < flowerCount; i++) {
-    const flower = new Flower();
-    flower.x = -80 + (i % 5) * (200 / 5);
-    flower.y = -80 + Math.floor(i / 5) * (200 / 5);
-    flower.rpm = Math.round(-20 + Math.random() * 40);
-    entities.push(flower);
-  }
+  const leftFlower = new Flower();
+  leftFlower.x = -50;
+  leftFlower.y = 0;
+  entities.push(leftFlower);
 
-  // Copy the genome of the first flower, and make a copy
-  for (var i = 0; i < 5; i++) {
-    const copiedFlower = new Flower(entities[1+5*i].genome);
-    copiedFlower.x = -120;
-    copiedFlower.y = -80 + i * (200 / 5);
-    entities.push(copiedFlower);
-  }
+  const rightFlower = new Flower();
+  rightFlower.x = 50;
+  rightFlower.y = 0;
+  entities.push(rightFlower);
+
+  const mergedFlower = new Flower(leftFlower.genome.mix(rightFlower.genome));
+  entities.push(mergedFlower);
+  // const flowerCount = 25;
+  // for (let i = 0; i < flowerCount; i++) {
+  //   const flower = new Flower();
+  //   flower.x = -80 + (i % 5) * (200 / 5);
+  //   flower.y = -80 + Math.floor(i / 5) * (200 / 5);
+  //   flower.rpm = Math.round(-20 + Math.random() * 40);
+  //   entities.push(flower);
+  // }
 
   // Start the render loop
   window.requestAnimationFrame(render);
