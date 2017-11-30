@@ -26,7 +26,8 @@ function onDOMContentLoaded() {
     const flower = new Flower(petalCount);
     flower.x = -80 + (i % 5) * (200 / 5);
     flower.y = -80 + Math.floor(i / 5) * (200 / 5);
-    flower.rpm = -20 + Math.random() * 40;
+    flower.rpm = Math.round(-20 + Math.random() * 40);
+    console.log(flower.rpm);
     entities.push(flower);
   }
 
