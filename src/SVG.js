@@ -1,10 +1,12 @@
 let SVG_NS;
-let _root, _defs;
+let _root, _defs, _pt;
 
 export function init(root) {
   _root = root;
   _defs = _root.querySelector('defs');
   SVG_NS = _root.namespaceURI;
+  // SVG point reused for matrix computations
+  _pt = _root.createSVGPoint();
 }
 
 export function create(tagName, attributes = {}) {
@@ -25,4 +27,10 @@ export function addToRoot(element) {
 
 export function addToDefs(element) {
   _defs.appendChild(element);
+}
+
+export function getSVGMousePosition(event) {
+  _pt.x = event.clientX;
+  _pt.y = event.clientY;
+  return _pt.matrixTransform(_root.getScreenCTM().inverse());
 }

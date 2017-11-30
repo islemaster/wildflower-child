@@ -105,6 +105,7 @@ export default class Flower {
     this.y = 0;
     this.spin = 0;
     this.rpm = 0;
+    this._hovered = false;
 
     this.gradient = SVG.create('linearGradient', {
       id: _.uniqueId(),
@@ -162,8 +163,44 @@ export default class Flower {
       'stroke-opacity': strokeOpacity,
     });
     this.root.appendChild(this.center);
-    SVG.addToRoot(this.root);
 
+    // Bind event handlers
+    this._onDrag = this.onDrag.bind(this);
+    this._onMouseUp = this.onMouseUp.bind(this);
+
+    // Attach event handlers
+    this.root.onmouseenter = this.onMouseEnter.bind(this);
+    this.root.onmouseleave = this.onMouseLeave.bind(this);
+    this.root.onmousedown = this.onMouseDown.bind(this);
+
+    SVG.addToRoot(this.root);
+  }
+
+  onMouseEnter() {
+    this._hovered = true;
+  }
+
+  onMouseLeave() {
+    this._hovered = false;
+  }
+
+  onMouseDown(event) {
+    this._mouseDragStart = SVG.getSVGMousePosition(event);
+    this._dragStartPosition = {x: this.x, y: this.y};
+    document.addEventListener('mousemove', this._onDrag);
+    document.addEventListener('mouseup', this._onMouseUp);
+  }
+
+  onDrag(event) {
+    const mousePosition = SVG.getSVGMousePosition(event);
+    this.x = this._dragStartPosition.x + (mousePosition.x - this._mouseDragStart.x);
+    this.y = this._dragStartPosition.y + (mousePosition.y - this._mouseDragStart.y);
+    this.dirty = true;
+  }
+
+  onMouseUp() {
+    document.removeEventListener('mousemove', this._onDrag);
+    document.removeEventListener('mouseup', this._onMouseUp);
   }
 
   render(deltaT) {
