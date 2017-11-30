@@ -4,6 +4,11 @@ import * as SVG from './SVG';
 
 export default class Flower {
   constructor(petalCount) {
+    this.petalCount = petalCount;
+    this.spin = 0;
+    this.rpm = 0;
+    this.dirty = true;
+
     this.gradient = SVG.create('linearGradient', {
       id: _.uniqueId(),
       x1: 0,
@@ -52,6 +57,14 @@ export default class Flower {
     // Push petals in a random order to mask z-order weirdness
     _.shuffle(this.petals).forEach(petal => this.root.appendChild(petal));
 
+    this.petals.forEach((petal, i) => {
+      petal.setAttribute('cx',0);
+      petal.setAttribute('cy',-10);
+      petal.setAttribute('rx', 2.5 + 2.5 * (8 / this.petalCount));
+      petal.setAttribute('ry',10);
+      petal.setAttribute('transform',`rotate(${(i * 360 / this.petalCount)})`);
+    });
+
     const centerColor = _.sample([
       randomColor({hue: 'yellow'}),
       randomColor({hue: 'orange'}),
@@ -64,15 +77,9 @@ export default class Flower {
       'stroke': strokeColor,
       'stroke-opacity': strokeOpacity,
     });
-
     this.root.appendChild(this.center);
     SVG.addToRoot(this.root);
 
-    this.petalCount = petalCount;
-    this.spin = 0;
-    this.rpm = 0;
-
-    this.dirty = true;
   }
 
   render(deltaT) {
@@ -82,14 +89,6 @@ export default class Flower {
       this.dirty = true;
     }
 
-    this.root.setAttribute(`transform`,`translate(${this.x} ${this.y})`);
-
-    this.petals.forEach((petal, i) => {
-      petal.setAttribute('cx',0);
-      petal.setAttribute('cy',-10);
-      petal.setAttribute('rx', 2.5 + 2.5 * (8 / this.petalCount));
-      petal.setAttribute('ry',10);
-      petal.setAttribute('transform',`rotate(${this.spin + (i * 360 / this.petalCount)})`);
-    });
+    this.root.setAttribute(`transform`,`translate(${this.x} ${this.y}) rotate(${this.spin})`);
   }
 }
