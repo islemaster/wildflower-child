@@ -1,13 +1,96 @@
 import _ from 'lodash';
 import randomColor from 'randomcolor';
+import {shuffle} from 'shuffle-seed';
 import * as SVG from './SVG';
 
+class Genome {
+  // A flower genome is a series of 0-255 values stored as a two-character
+  // hex string, which each represent a 0-1 range used in place of a
+  // Math.random() call, or in some cases, passed as a integer to randomColor.
+  constructor(genomeString = '') {
+    this._genes = genomeString;
+    if (this._genes.length < Genome.LENGTH) {
+      this._genes +=
+        _.range(Genome.LENGTH - this._genes.length)
+        .map(() => Math.floor(16 * Math.random()).toString(16))
+        .join('');
+    }
+  }
+
+  gene(startIndex) {
+    return parseInt(this._genes.slice(startIndex, startIndex+2), 16);
+  }
+
+  geneNormal(startIndex) {
+    return this.gene(startIndex) / 0xFF;
+  }
+
+  // Genes 0-1
+  petalCount() {
+    return 3 + Math.floor(25 * this.geneNormal(0));
+  }
+
+  // Genes 2-9
+  petalColors() {
+    return shuffle(
+      [
+        this.baseColor(),
+        this.secondaryColor(),
+        this.tertiaryColor(),
+      ],
+      this.gene(2)
+    );
+  }
+
+  baseColor() {
+    return randomColor({seed: this.gene(4)});
+  }
+
+  secondaryColor() {
+    return randomColor({seed: this.gene(6), hue: this.baseColor()})
+  }
+
+  tertiaryColor() {
+    const gene = this.gene(8);
+    if (gene < 0x40) {
+      return 'white';
+    } else {
+      return randomColor({seed: gene, luminosity: 'dark'});
+    }
+  }
+
+  // Genes 10-11
+  petalGradientStops() {
+    return [
+      0,
+      30+Math.floor(60*this.geneNormal(10)),
+      100
+    ];
+  }
+
+  // Genes 12-13
+  centerSize() {
+    return 3 + 3 * this.geneNormal(12);
+  }
+
+  // Genes 14-15
+  centerColor() {
+    const gene = this.gene(14);
+    return gene < 0x7F ?
+      randomColor({seed: gene, hue: 'yellow'}) :
+      randomColor({seed: gene, hue: 'orange'});
+  }
+
+}
+Genome.LENGTH = 16;
+
 export default class Flower {
-  constructor(petalCount) {
-    this.petalCount = petalCount;
+  constructor(genome = new Genome()) {
+    this.dirty = true;
+    this.genome = genome;
+    this.petalCount = genome.petalCount();
     this.spin = 0;
     this.rpm = 0;
-    this.dirty = true;
 
     this.gradient = SVG.create('linearGradient', {
       id: _.uniqueId(),
@@ -16,37 +99,23 @@ export default class Flower {
       y1: 1,
       y2: 0,
     });
-
-    const baseColor = randomColor();
-    const colors = _.shuffle([
-      baseColor,
-      randomColor({hue: baseColor}),
-      Math.random() < 0.2 ? 'white' : randomColor({luminosity: 'dark'})
-    ]);
-
-    const firstStop = SVG.create('stop', {
-      'offset': '0%',
-      'stop-color': colors[0],
-    });
-    this.gradient.appendChild(firstStop);
-    const middleStop = SVG.create('stop', {
-      'offset': (30+Math.floor(60*Math.random()))+'%',
-      'stop-color': colors[1],
-    });
-    this.gradient.appendChild(middleStop);
-    const lastStop = SVG.create('stop', {
-      'offset': '100%',
-      'stop-color': colors[2],
-    });
-    this.gradient.appendChild(lastStop);
+    const colors = genome.petalColors();
+    const gradientStops = genome.petalGradientStops();
+    for (let i = 0; i < colors.length; i++) {
+      const stop = SVG.create('stop', {
+        'offset': gradientStops[i] + '%',
+        'stop-color': colors[i],
+      });
+      this.gradient.appendChild(stop);
+    }
     SVG.addToDefs(this.gradient);
 
-    const strokeColor = randomColor({hue: 'monochrome', luminosity: 'dark'});
-    const strokeOpacity = 0.5;
+    const strokeColor = '#420';
+    const strokeOpacity = 0.4;
 
     // Create elements
     this.root = SVG.create('g');
-    this.petals = _.range(petalCount).map(i => {
+    this.petals = _.range(this.petalCount).map(i => {
       const petal = SVG.create('ellipse', {
         'fill': `url(#${this.gradient.id})`,
         'stroke': strokeColor,
@@ -54,8 +123,13 @@ export default class Flower {
       });
       return petal;
     });
-    // Push petals in a random order to mask z-order weirdness
-    _.shuffle(this.petals).forEach(petal => this.root.appendChild(petal));
+    // Push petals in a deterministic skip-order because it z-orders better.
+    const petalOrderingSkip = this.petals.length < 12 ? 2 : 3;
+    for (let i = 0; i < petalOrderingSkip; i++) {
+      for (let j = i; j < this.petals.length; j += petalOrderingSkip) {
+        this.root.appendChild(this.petals[j]);
+      }
+    }
 
     this.petals.forEach((petal, i) => {
       petal.setAttribute('cx',0);
@@ -65,15 +139,11 @@ export default class Flower {
       petal.setAttribute('transform',`rotate(${(i * 360 / this.petalCount)})`);
     });
 
-    const centerColor = _.sample([
-      randomColor({hue: 'yellow'}),
-      randomColor({hue: 'orange'}),
-    ]);
     this.center = SVG.create('circle', {
       'cx': 0,
       'cy': 0,
-      'r': 3 + 3 * Math.random(),
-      'fill': centerColor,
+      'r': genome.centerSize(),
+      'fill': genome.centerColor(),
       'stroke': strokeColor,
       'stroke-opacity': strokeOpacity,
     });
