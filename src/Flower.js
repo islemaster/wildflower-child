@@ -130,6 +130,8 @@ export default class Flower {
 
     // Create elements
     this.root = SVG.create('g');
+    this.root.classList.add('grabbable');
+
     this.petals = _.range(this.petalCount).map(i => {
       const petal = SVG.create('ellipse', {
         'fill': `url(#${this.gradient.id})`,
@@ -166,7 +168,7 @@ export default class Flower {
 
     // Bind event handlers
     this._onDrag = this.onDrag.bind(this);
-    this._onMouseUp = this.onMouseUp.bind(this);
+    this._onDrop = this.onDrop.bind(this);
 
     // Attach event handlers
     this.root.onmouseenter = this.onMouseEnter.bind(this);
@@ -187,8 +189,12 @@ export default class Flower {
   onMouseDown(event) {
     this._mouseDragStart = SVG.getSVGMousePosition(event);
     this._dragStartPosition = {x: this.x, y: this.y};
+
+    this.root.classList.add('grabbed');
+    this.root.classList.remove('grabbable');
+
     document.addEventListener('mousemove', this._onDrag);
-    document.addEventListener('mouseup', this._onMouseUp);
+    document.addEventListener('mouseup', this._onDrop);
   }
 
   onDrag(event) {
@@ -198,9 +204,12 @@ export default class Flower {
     this.dirty = true;
   }
 
-  onMouseUp() {
+  onDrop() {
     document.removeEventListener('mousemove', this._onDrag);
-    document.removeEventListener('mouseup', this._onMouseUp);
+    document.removeEventListener('mouseup', this._onDrop);
+
+    this.root.classList.remove('grabbed');
+    this.root.classList.add('grabbable');
   }
 
   render(deltaT) {
