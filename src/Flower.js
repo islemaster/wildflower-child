@@ -75,7 +75,7 @@ class Genome {
   petalGradientStops() {
     return [
       0,
-      30+Math.floor(60*this.geneNormal(10)),
+      30+Math.floor(50*this.geneNormal(10)),
       100
     ];
   }

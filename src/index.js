@@ -12,18 +12,22 @@ function onDOMContentLoaded() {
 
   entities.push(new Camera());
 
-  const leftFlower = new Flower();
-  leftFlower.x = -50;
-  leftFlower.y = 0;
-  entities.push(leftFlower);
+  for (var i = 0; i < 5; i++) {
+    const y = -80 + 40 * i;
+    const leftFlower = new Flower();
+    leftFlower.x = -50;
+    leftFlower.y = y;
+    entities.push(leftFlower);
 
-  const rightFlower = new Flower();
-  rightFlower.x = 50;
-  rightFlower.y = 0;
-  entities.push(rightFlower);
+    const rightFlower = new Flower();
+    rightFlower.x = 50;
+    rightFlower.y = y;
+    entities.push(rightFlower);
 
-  const mergedFlower = new Flower(leftFlower.genome.mix(rightFlower.genome));
-  entities.push(mergedFlower);
+    const mergedFlower = new Flower(leftFlower.genome.mix(rightFlower.genome));
+    mergedFlower.y = y;
+    entities.push(mergedFlower);
+  }
   // const flowerCount = 25;
   // for (let i = 0; i < flowerCount; i++) {
   //   const flower = new Flower();
