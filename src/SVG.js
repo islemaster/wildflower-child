@@ -7,8 +7,12 @@ export function init(root) {
   SVG_NS = _root.namespaceURI;
 }
 
-export function create(tagName) {
-  return document.createElementNS(SVG_NS, tagName);
+export function create(tagName, attributes = {}) {
+  const el = document.createElementNS(SVG_NS, tagName);
+  for (const key in attributes) {
+    el.setAttribute(key, attributes[key]);
+  }
+  return el;
 }
 
 export function getRoot() {
