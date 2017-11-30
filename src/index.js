@@ -1,12 +1,7 @@
 import _ from 'lodash';
 import * as SVG from './SVG';
+import Camera from './Camera';
 import Flower from './Flower';
-
-const camera = {
-  center: [0, 0],
-  radius: 100,
-  dirty: true,
-};
 
 const entities = [];
 
@@ -15,10 +10,7 @@ function onDOMContentLoaded() {
 
   SVG.init(document.getElementById('svg-root'));
 
-  // Listen for window resize events to to trigger a camera update
-  window.addEventListener('resize', () => {
-    camera.dirty = true;
-  });
+  entities.push(new Camera());
 
   const flowerCount = 25;
   for (let i = 0; i < flowerCount; i++) {
@@ -48,25 +40,6 @@ function render(timestamp) {
       entities[i].dirty = false;
       entities[i].render(dt);
     }
-  }
-
-  if (camera.dirty) {
-    camera.dirty = false;
-    let x, y, w, h, ratio;
-    const root = SVG.getRoot();
-    const viewportRect = root.getBoundingClientRect();
-    if (viewportRect.width > viewportRect.height) {
-      ratio = viewportRect.width / viewportRect.height;
-      w = camera.radius * 2 * ratio;
-      h = camera.radius * 2;
-    } else {
-      ratio = viewportRect.height / viewportRect.width;
-      w = camera.radius * 2;
-      h = camera.radius * 2 * ratio;
-    }
-    x = camera.center[0] - w / 2;
-    y = camera.center[1] - h / 2;
-    root.setAttribute('viewBox', [x, y, w, h].join(' '))
   }
 
   lastRender = timestamp;
