@@ -1,6 +1,5 @@
-import _ from 'lodash';
 import * as SVG from './SVG';
-import Board from './Board';
+import Board, {DIRECTIONS, scale} from './Board';
 import Camera from './Camera';
 import Flower, {Genome} from './Flower';
 
@@ -16,15 +15,24 @@ function onDOMContentLoaded() {
 
   board = new Board();
 
-  let lastGenome = new Genome();
-  board.forEachCell(({x, y, z}) => {
-    const flower = new Flower(new Genome().mix(lastGenome));
-    lastGenome = flower.genome;
-    const center = board.center({x, y, z});
-    flower.x = center.x;
-    flower.y = center.y;
+  // Fill the board
+  // let lastGenome = new Genome();
+  // board.forEachCell(({x, y, z}) => {
+  //   const flower = new Flower(new Genome().mix(lastGenome));
+  //   lastGenome = flower.genome;
+  //   const center = board.center({x, y, z});
+  //   flower.x = center.x;
+  //   flower.y = center.y;
+  //   entities.push(flower);
+  // });
+
+  // Flowers in board corners
+  for (let i = 0; i < 6; i++) {
+    const cell = scale(DIRECTIONS[i], board.radius).toJS();
+    const flower = new Flower();
+    board.set(cell, flower);
     entities.push(flower);
-  });
+  }
 
   // Start the render loop
   window.requestAnimationFrame(render);

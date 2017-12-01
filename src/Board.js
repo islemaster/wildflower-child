@@ -1,11 +1,12 @@
 import {Map} from 'immutable';
+import Flower from './Flower';
 
 const SQRT3 = Math.sqrt(3);
 const HEX_SIDE = 23;
 const HEX_WIDTH = HEX_SIDE * 2;
 const HEX_HEIGHT = SQRT3 / 2 * HEX_WIDTH;
 const CENTER = Map({x: 0, y: 0, z: 0});
-const DIRECTIONS = [
+export const DIRECTIONS = [
   Map({x: 1, y: -1, z: 0}),
   Map({x: 1, y: 0, z: -1}),
   Map({x: 0, y: 1, z: -1}),
@@ -20,12 +21,11 @@ const DIRECTIONS = [
  */
 export default class Board {
   /**
-   *
    * @param radius where 1 is a single cell, 2 is a baord 3 cells across,
    *   3 is a board 5 cells across, etc.
    */
   constructor(radius = 3) {
-    this._radius = radius;
+    this.radius = radius;
     this._cells = Map();
   }
 
@@ -34,7 +34,20 @@ export default class Board {
   }
 
   set({x, y, z}, newValue) {
+    if (newValue instanceof Flower) {
+      const oldPosition = this._cells.keyOf(newValue);
+      if (oldPosition) {
+        this._cells = this._cells.delete(oldPosition);
+      }
+      newValue.setCell(this, {x, y, z});
+    }
     this._cells = this._cells.set(Map({x, y, z}), newValue);
+  }
+
+  isInBounds({x, y, z}) {
+    return Math.abs(x) <= this.radius &&
+      Math.abs(y) <= this.radius &&
+      Math.abs(z) <= this.radius;
   }
 
   /**
@@ -47,9 +60,36 @@ export default class Board {
     };
   }
 
+  cellFromPoint({x, y}) {
+    const q = x * 2/3 / HEX_SIDE;
+    const r = (-x / 3 + SQRT3/3 * y) / HEX_SIDE;
+
+    return round(axialToCube({q, r}))
+  }
+
   forEachCell(callback) {
     cubeSpiral(CENTER, this._radius).forEach(cell => callback(cell.toJS()));
   }
+}
+
+function round({x, y, z}) {
+  let rx = Math.round(x);
+  let ry = Math.round(y);
+  let rz = Math.round(z);
+
+  const dX = Math.abs(rx - x);
+  const dY = Math.abs(ry - y);
+  const dZ = Math.abs(rz - z);
+
+  if (dX > dY && dX > dZ) {
+    rx = -ry-rz;
+  } else if (dY > dZ) {
+    ry = -rx-rz;
+  } else {
+    rz = -rx-ry;
+  }
+
+  return {x: rx, y: ry, z: rz};
 }
 
 function cubeToAxial({x, y, z}) {
@@ -97,7 +137,7 @@ function add(a, b) {
   });
 }
 
-function scale(a, s) {
+export function scale(a, s) {
   return Map({
     x: a.get('x') * s,
     y: a.get('y') * s,

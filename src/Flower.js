@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import {Map} from 'immutable';
 import randomColor from 'randomcolor';
 import {shuffle} from 'shuffle-seed';
 import * as SVG from './SVG';
@@ -104,8 +105,10 @@ export default class Flower {
     this.dirty = true;
     this.genome = genome;
     this.petalCount = genome.petalCount();
+    this.board = null;
     this.x = 0;
     this.y = 0;
+    this._currentCell = null;
     this.spin = 0;
     this.rpm = 0;
     this.maxRpm = MAX_RPM;
@@ -182,6 +185,15 @@ export default class Flower {
     SVG.addToRoot(this.root);
   }
 
+  setCell(board, cell) {
+    this.board = board;
+    this._currentCell = cell;
+    const center = this.board.center(cell);
+    this.x = center.x;
+    this.y = center.y;
+    this.dirty = true;
+  }
+
   onMouseEnter() {
     this._hovered = true;
     // If not spinning pick a new direction
@@ -198,6 +210,7 @@ export default class Flower {
   onMouseDown(event) {
     this._mouseDragStart = SVG.getSVGMousePosition(event);
     this._dragStartPosition = {x: this.x, y: this.y};
+    this._originalTargetCell = this._currentCell;
 
     this.root.classList.add('grabbed');
     this.root.classList.remove('grabbable');
@@ -211,9 +224,17 @@ export default class Flower {
 
   onDrag(event) {
     const mousePosition = SVG.getSVGMousePosition(event);
-    this.x = this._dragStartPosition.x + (mousePosition.x - this._mouseDragStart.x);
-    this.y = this._dragStartPosition.y + (mousePosition.y - this._mouseDragStart.y);
-    this.dirty = true;
+    const targetCell = this.board.cellFromPoint(mousePosition);
+    if (Map(targetCell).equals(Map(this._currentCell))) {
+      console.log('same cell, doing nothing');
+      return;
+    } else if (!this.board.isInBounds(targetCell) || this.board.get(targetCell)) {
+      // If cell is occupied or out of bounds, dropping should
+      // return us to our original spot.
+      this.board.set(this._originalTargetCell, this);
+    } else {
+      this.board.set(targetCell, this);
+    }
   }
 
   onDrop() {
