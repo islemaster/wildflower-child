@@ -1,5 +1,6 @@
 import {Map} from 'immutable';
 import Flower from './Flower';
+import * as SVG from './SVG';
 
 const SQRT3 = Math.sqrt(3);
 const HEX_SIDE = 23;
@@ -27,6 +28,21 @@ export default class Board {
   constructor(radius = 3) {
     this.radius = radius;
     this._cells = Map();
+
+    // Outline the play area
+    this.root = SVG.create('g');
+    const corners = DIRECTIONS.map(d => this.center(scale(d, this.radius).toJS()));
+    for (let i = 0; i < corners.length; i++) {
+      this.root.appendChild(SVG.create('line', {
+        x1: corners[i].x,
+        y1: corners[i].y,
+        x2: corners[(i+1) % corners.length].x,
+        y2: corners[(i+1) % corners.length].y,
+        stroke: 'black',
+        'stroke-opacity': 0.1,
+      }));
+    }
+    SVG.addToRoot(this.root);
   }
 
   get({x, y, z}) {
