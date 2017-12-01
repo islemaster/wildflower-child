@@ -48,7 +48,7 @@ export default class Board {
     // Add some text
     let start = this.center(scale(DIRECTIONS[3], this.radius+1));
     let end = this.center(scale(DIRECTIONS[2], this.radius+1));
-    let text = this.createText(start, end, '~ Flower Child ~');
+    let text = this.createText(start, end, '~ Wildflower Child ~');
     this.root.appendChild(text);
 
     start = this.center(scale(DIRECTIONS[2], this.radius+1));
@@ -79,9 +79,12 @@ export default class Board {
     this.startOverText = this.createText(start, end, '~ Start Over? ~');
     this.startOverText.style.cursor = 'pointer';
     this.startOverText.style.display = 'none';
+    this.startOverText.onclick = this.startOver.bind(this);
     this.root.appendChild(this.startOverText);
 
     SVG.addToRoot(this.root);
+
+    this.startOver();
   }
 
   createText(start, end, text) {
@@ -101,6 +104,20 @@ export default class Board {
     titlePath.textContent = text;
     title.appendChild(titlePath);
     return title;
+  }
+
+  startOver() {
+    this._cells.forEach(flower => flower.destroy());
+    this._cells = Map();
+
+    this.startOverText.style.display = 'none';
+
+    // Flowers in board corners
+    for (let i = 0; i < 6; i++) {
+      const cell = scale(DIRECTIONS[i], this.radius).toJS();
+      const flower = new Flower();
+      this.set(cell, flower);
+    }
   }
 
   render(deltaT) {
@@ -193,7 +210,27 @@ export default class Board {
     });
     newFlowers.forEach(({location, flower}) => {
       this.set(location, flower);
-    })
+    });
+
+    // Detect if board is full, present start over option.
+    if (this._cells.count() >= 37) {
+      this.showStartOver();
+    }
+  }
+
+  showStartOver() {
+    setTimeout(() => {
+      let opacity = 0;
+      this.startOverText.style.opacity = opacity;
+      this.startOverText.style.display = '';
+      const interval = setInterval(() => {
+        opacity += 0.02;
+        if (opacity >= 1) {
+          clearInterval(interval);
+        }
+        this.startOverText.style.opacity = opacity;
+      }, 33);
+    }, 1000);
   }
 }
 

@@ -25,8 +25,16 @@ export function addToRoot(element) {
   _root.appendChild(element);
 }
 
+export function removeFromRoot(element) {
+  _root.removeChild(element);
+}
+
 export function addToDefs(element) {
   _defs.appendChild(element);
+}
+
+export function removeFromDefs(element) {
+  _defs.removeChild(element);
 }
 
 export function getSVGMousePosition(event) {

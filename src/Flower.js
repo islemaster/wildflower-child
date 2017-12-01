@@ -184,6 +184,11 @@ export default class Flower {
     SVG.addToRoot(this.root);
   }
 
+  destroy() {
+    SVG.removeFromRoot(this.root);
+    SVG.removeFromDefs(this.gradient);
+  }
+
   setCell(board, cell) {
     this.board = board;
     this._currentCell = cell;

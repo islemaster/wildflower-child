@@ -16,24 +16,6 @@ function onDOMContentLoaded() {
   board = new Board();
   entities.push(board);
 
-  // Fill the board
-  // let lastGenome = new Genome();
-  // board.forEachCell(({x, y, z}) => {
-  //   const flower = new Flower(new Genome().mix(lastGenome));
-  //   lastGenome = flower.genome;
-  //   const center = board.center({x, y, z});
-  //   flower.x = center.x;
-  //   flower.y = center.y;
-  //   entities.push(flower);
-  // });
-
-  // Flowers in board corners
-  for (let i = 0; i < 6; i++) {
-    const cell = scale(DIRECTIONS[i], board.radius).toJS();
-    const flower = new Flower();
-    board.set(cell, flower);
-  }
-
   // Start the render loop
   window.requestAnimationFrame(render);
 }
