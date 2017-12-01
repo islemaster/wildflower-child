@@ -100,6 +100,7 @@ const MAX_RPM = 60;
 export default class Flower {
   constructor(genome = new Genome()) {
     this.dirty = true;
+    this._isDomCreated = false;
     this.genome = genome;
     this.petalCount = genome.petalCount();
     this.board = null;
@@ -112,7 +113,10 @@ export default class Flower {
     this._scale = 0.1;
     this._hovered = false;
     this._dragging = false;
+  }
 
+  createDom() {
+    const genome = this.genome;
     this.gradient = SVG.create('linearGradient', {
       id: _.uniqueId(),
       x1: 0,
@@ -182,6 +186,8 @@ export default class Flower {
     this.root.onmousedown = this.onMouseDown.bind(this);
 
     SVG.addToRoot(this.root);
+
+    this._isDomCreated = true;
   }
 
   destroy() {
@@ -261,6 +267,10 @@ export default class Flower {
   }
 
   render(deltaT) {
+    if (!this._isDomCreated) {
+      this.createDom();
+    }
+
     // Scale up when created
     if (this._scale < 1) {
       this._scale = Math.min(1, this._scale + deltaT / 200);
