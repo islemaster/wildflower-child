@@ -13,3 +13,6 @@ free days to work on the jam and the "Throwback" theme drove me to the antique
 illustration look that sort of developed here.  I do think there are parts
 for a more robust puzzle game here - I might explore that in the future.
 
+## See Also
+
+- https://islemaster.itch.io/wildflower-child
