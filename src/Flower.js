@@ -228,14 +228,12 @@ export default class Flower {
   onDrag(event) {
     const mousePosition = SVG.getSVGMousePosition(event);
     const targetCell = this.board.cellFromPoint(mousePosition);
-    if (Map(targetCell).equals(Map(this._currentCell))) {
-      console.log('same cell, doing nothing');
-      return;
-    } else if (!this.board.isInBounds(targetCell) || this.board.get(targetCell)) {
-      // If cell is occupied or out of bounds, dropping should
-      // return us to our original spot.
-      this.board.set(this._originalTargetCell, this);
-    } else {
+
+    // If cell is occupied or out of bounds, stay on the last spot we snapped
+    // to.  Otherwise, snap to the new spot.
+    if (!Map(targetCell).equals(Map(this._currentCell))
+      && this.board.isInBounds(targetCell)
+      && !this.board.get(targetCell)) {
       this.board.set(targetCell, this);
     }
   }
