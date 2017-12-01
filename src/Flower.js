@@ -103,12 +103,13 @@ export default class Flower {
     this.genome = genome;
     this.petalCount = genome.petalCount();
     this.board = null;
+    this._currentCell = null;
     this.x = 0;
     this.y = 0;
-    this._currentCell = null;
-    this.spin = 0;
-    this.rpm = 0;
+    this.rotation = 0;
+    this.rpm = 60;
     this.maxRpm = MAX_RPM;
+    this._scale = 0.1;
     this._hovered = false;
     this._dragging = false;
 
@@ -249,7 +250,21 @@ export default class Flower {
     }
   }
 
+  pulse() {
+    this._scale = 1.2;
+    this.dirty = true;
+  }
+
   render(deltaT) {
+    // Scale up when created
+    if (this._scale < 1) {
+      this._scale = Math.min(1, this._scale + deltaT / 200);
+      this.dirty = true;
+    } else if (this._scale > 1) {
+      this._scale = Math.max(1, this._scale - deltaT / 1000);
+      this.dirty = true;
+    }
+
     // Spin when hovered or dragging
     if (this._hovered || this._dragging) {
       this.rpm += (this.maxRpm - this.rpm) / 3;
@@ -262,10 +277,10 @@ export default class Flower {
 
     if (this.rpm != 0) {
       const rpDeltaT = this.rpm * deltaT / 60000;
-      this.spin = (this.spin + 360 * rpDeltaT) % 360;
+      this.rotation = (this.rotation + 360 * rpDeltaT) % 360;
       this.dirty = true;
     }
 
-    this.root.setAttribute(`transform`,`translate(${this.x} ${this.y}) rotate(${this.spin})`);
+    this.root.setAttribute(`transform`,`translate(${this.x} ${this.y}) scale(${this._scale}) rotate(${this.rotation})`);
   }
 }

@@ -117,6 +117,7 @@ export default class Board {
       .concat(DIRECTIONS
         .map(d => this.get(add(moveOrigin, d)))
         .filter(x => !!x));
+    activatedFlowers.forEach(flower => flower.pulse());
     const emptyAdjacentCells = DIRECTIONS
       .map(d => add(moveOrigin, d))
       .filter(c => this.isInBounds(c) && !this.isOccupied(c));
