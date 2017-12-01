@@ -110,15 +110,20 @@ export default class Board {
   // When a flower is dropped in a new position, generate new flowers in
   // empty adjacent cells that are adjacent to at least two flowers.
   resolveMoveAt(cell) {
-    const origin = Map(cell);
-    const emptyAdjacentCells = DIRECTIONS
-      .map(d => add(origin, d))
-      .filter(c => this.isInBounds(c) && !this.isOccupied(c));
+    const moveOrigin = Map(cell);
     const newFlowers = [];
+
+    const activatedFlowers = [this.get(moveOrigin)]
+      .concat(DIRECTIONS
+        .map(d => this.get(add(moveOrigin, d)))
+        .filter(x => !!x));
+    const emptyAdjacentCells = DIRECTIONS
+      .map(d => add(moveOrigin, d))
+      .filter(c => this.isInBounds(c) && !this.isOccupied(c));
     emptyAdjacentCells.forEach(adjacent => {
       const parents = DIRECTIONS
         .map(d => this.get(add(adjacent, d)))
-        .filter(x => !!x);
+        .filter(x => !!x && activatedFlowers.includes(x));
 
       if (parents.length >= 2) {
         newFlowers.push({
