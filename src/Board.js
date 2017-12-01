@@ -30,8 +30,9 @@ export default class Board {
     this.radius = radius;
     this._cells = Map();
 
-    // Outline the play area
     this.root = SVG.create('g');
+
+    // Outline the play area
     const corners = DIRECTIONS.map(d => this.center(scale(d, this.radius).toJS()));
     for (let i = 0; i < corners.length; i++) {
       this.root.appendChild(SVG.create('line', {
@@ -43,7 +44,63 @@ export default class Board {
         'stroke-opacity': 0.1,
       }));
     }
+
+    // Add some text
+    let start = this.center(scale(DIRECTIONS[3], this.radius+1));
+    let end = this.center(scale(DIRECTIONS[2], this.radius+1));
+    let text = this.createText(start, end, '~ Flower Child ~');
+    this.root.appendChild(text);
+
+    start = this.center(scale(DIRECTIONS[2], this.radius+1));
+    end = this.center(scale(DIRECTIONS[1], this.radius+1));
+    text = this.createText(start, end, '~ Drag & Drop ~');
+    this.root.appendChild(text);
+
+    start = this.center(scale(DIRECTIONS[4], this.radius+1));
+    end = this.center(scale(DIRECTIONS[5], this.radius+1));
+    text = this.createText(start, end, '~ Brad Buchanan ~');
+    let link = SVG.create('a', {
+      href: 'http://bradleycbuchanan.com'
+    });
+    link.appendChild(text);
+    this.root.appendChild(link);
+
+    start = this.center(scale(DIRECTIONS[5], this.radius+1));
+    end = this.center(scale(DIRECTIONS[0], this.radius+1));
+    text = this.createText(start, end, '~ View Source ~');
+    link = SVG.create('a', {
+      href: 'https://github.com/islemaster/floral-wallpaper'
+    });
+    link.appendChild(text);
+    this.root.appendChild(link);
+
+    start = this.center(scale(DIRECTIONS[1], this.radius+1));
+    end = this.center(scale(DIRECTIONS[0], this.radius+1));
+    this.startOverText = this.createText(start, end, '~ Start Over? ~');
+    this.startOverText.style.cursor = 'pointer';
+    this.startOverText.style.display = 'none';
+    this.root.appendChild(this.startOverText);
+
     SVG.addToRoot(this.root);
+  }
+
+  createText(start, end, text) {
+    const id = 'text-path-' + _.uniqueId();
+    this.root.appendChild(SVG.create('path', {
+      id,
+      d: `M ${start.x},${start.y} L ${end.x},${end.y}`,
+      fill: 'transparent'
+    }));
+    const title = SVG.create('text', {
+      'text-anchor': 'middle'
+    });
+    const titlePath = SVG.create('textPath', {
+      'startOffset': '50%',
+    });
+    titlePath.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', '#' + id);
+    titlePath.textContent = text;
+    title.appendChild(titlePath);
+    return title;
   }
 
   render(deltaT) {
@@ -89,7 +146,8 @@ export default class Board {
   /**
    * Given cube coordinates, give center of cell in SVG-space
    */
-  center({x, z}) {
+  center(cell) {
+    const {x, z} = cell instanceof Map ? cell.toJS() : cell;
     return {
       x: (x * HEX_WIDTH * 3/4),
       y: (z * HEX_HEIGHT) + (x * HEX_HEIGHT / 2)
