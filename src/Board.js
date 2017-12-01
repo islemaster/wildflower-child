@@ -1,5 +1,5 @@
 import {Map} from 'immutable';
-import Flower from './Flower';
+import Flower, {Genome} from './Flower';
 import * as SVG from './SVG';
 
 const SQRT3 = Math.sqrt(3);
@@ -26,6 +26,7 @@ export default class Board {
    *   3 is a board 5 cells across, etc.
    */
   constructor(radius = 3) {
+    this.dirty = true;
     this.radius = radius;
     this._cells = Map();
 
@@ -45,11 +46,24 @@ export default class Board {
     SVG.addToRoot(this.root);
   }
 
-  get({x, y, z}) {
-    return this._cells.get(Map({x, y, z}));
+  render(deltaT) {
+    this._cells.forEach(occupant => {
+      if (occupant.dirty) {
+        occupant.dirty = false;
+        occupant.render(deltaT);
+      }
+    });
+    // Always call render on board, so it can call render on children.
+    this.dirty = true;
   }
 
-  set({x, y, z}, newValue) {
+  get(cell) {
+    if (!(cell instanceof Map)) cell = Map(cell);
+    return this._cells.get(cell);
+  }
+
+  set(cell, newValue) {
+    const {x, y, z} = cell instanceof Map ? cell.toJS() : cell;
     if (newValue instanceof Flower) {
       const oldPosition = this._cells.keyOf(newValue);
       if (oldPosition) {
@@ -60,7 +74,13 @@ export default class Board {
     this._cells = this._cells.set(Map({x, y, z}), newValue);
   }
 
-  isInBounds({x, y, z}) {
+  isOccupied(cell) {
+    if (!(cell instanceof Map)) cell = Map(cell);
+    return !!this.get(cell);
+  }
+
+  isInBounds(cell) {
+    const {x, y, z} = cell instanceof Map ? cell.toJS() : cell;
     return Math.abs(x) <= this.radius &&
       Math.abs(y) <= this.radius &&
       Math.abs(z) <= this.radius;
@@ -85,6 +105,31 @@ export default class Board {
 
   forEachCell(callback) {
     cubeSpiral(CENTER, this._radius).forEach(cell => callback(cell.toJS()));
+  }
+
+  // When a flower is dropped in a new position, generate new flowers in
+  // empty adjacent cells that are adjacent to at least two flowers.
+  resolveMoveAt(cell) {
+    const origin = Map(cell);
+    const emptyAdjacentCells = DIRECTIONS
+      .map(d => add(origin, d))
+      .filter(c => this.isInBounds(c) && !this.isOccupied(c));
+    const newFlowers = [];
+    emptyAdjacentCells.forEach(adjacent => {
+      const parents = DIRECTIONS
+        .map(d => this.get(add(adjacent, d)))
+        .filter(x => !!x);
+
+      if (parents.length >= 2) {
+        newFlowers.push({
+          location: adjacent,
+          flower: new Flower(Genome.mix(parents))
+        });
+      }
+    });
+    newFlowers.forEach(({location, flower}) => {
+      this.set(location, flower);
+    })
   }
 }
 

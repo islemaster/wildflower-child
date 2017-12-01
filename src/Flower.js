@@ -26,6 +26,15 @@ export class Genome {
     return this.gene(startIndex) / 0xFF;
   }
 
+  static mix(parents) {
+    parents = parents.map(p => p instanceof Flower ? p.genome._genes : p._genes);
+    return new Genome(
+      _.range(Genome.LENGTH / 2)
+        .map(i => _.sample(parents.map(p => p.substr(i * 2, 2))))
+        .join('')
+    );
+  }
+
   mix(otherGenome) {
     const leftString = this._genes;
     const rightString = otherGenome._genes;
@@ -209,8 +218,6 @@ export default class Flower {
   }
 
   onMouseDown(event) {
-    this._mouseDragStart = SVG.getSVGMousePosition(event);
-    this._dragStartPosition = {x: this.x, y: this.y};
     this._originalTargetCell = this._currentCell;
 
     this._dragging = true;
@@ -246,6 +253,12 @@ export default class Flower {
     this.root.classList.add('grabbable');
 
     this._dragging = false;
+
+    // If we dropped a flower at a new position, report that we made a move
+    // and generate new flowers
+    if (!Map(this._originalTargetCell).equals(Map(this._currentCell))) {
+      this.board.resolveMoveAt(this._currentCell);
+    }
   }
 
   render(deltaT) {

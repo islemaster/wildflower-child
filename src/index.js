@@ -14,6 +14,7 @@ function onDOMContentLoaded() {
   entities.push(new Camera());
 
   board = new Board();
+  entities.push(board);
 
   // Fill the board
   // let lastGenome = new Genome();
@@ -31,7 +32,6 @@ function onDOMContentLoaded() {
     const cell = scale(DIRECTIONS[i], board.radius).toJS();
     const flower = new Flower();
     board.set(cell, flower);
-    entities.push(flower);
   }
 
   // Start the render loop
