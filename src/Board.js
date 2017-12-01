@@ -69,7 +69,7 @@ export default class Board {
     end = this.center(scale(DIRECTIONS[0], this.radius+1));
     text = this.createText(start, end, '~ View Source ~');
     link = SVG.create('a', {
-      href: 'https://github.com/islemaster/floral-wallpaper'
+      href: 'https://github.com/islemaster/wildflower-child'
     });
     link.appendChild(text);
     this.root.appendChild(link);
