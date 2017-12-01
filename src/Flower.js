@@ -29,22 +29,10 @@ export class Genome {
   static mix(parents) {
     parents = parents.map(p => p instanceof Flower ? p.genome._genes : p._genes);
     return new Genome(
-      _.range(Genome.LENGTH / 2)
-        .map(i => _.sample(parents.map(p => p.substr(i * 2, 2))))
+      _.range(Genome.LENGTH)
+        .map(i => _.sample(parents.map(p => p.substr(i, 1))))
         .join('')
     );
-  }
-
-  mix(otherGenome) {
-    const leftString = this._genes;
-    const rightString = otherGenome._genes;
-    return new Genome(
-      _.range(Genome.LENGTH / 2).map(i => {
-        return Math.random() <= 0.5 ?
-          leftString.substr(i * 2, 2) :
-          rightString.substr(i * 2, 2);
-      }).join('')
-    )
   }
 
   // Genes 0-1
