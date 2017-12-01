@@ -113,6 +113,7 @@ export default class Flower {
     this.rpm = 0;
     this.maxRpm = MAX_RPM;
     this._hovered = false;
+    this._dragging = false;
 
     this.gradient = SVG.create('linearGradient', {
       id: _.uniqueId(),
@@ -212,6 +213,8 @@ export default class Flower {
     this._dragStartPosition = {x: this.x, y: this.y};
     this._originalTargetCell = this._currentCell;
 
+    this._dragging = true;
+
     this.root.classList.add('grabbed');
     this.root.classList.remove('grabbable');
 
@@ -243,11 +246,13 @@ export default class Flower {
 
     this.root.classList.remove('grabbed');
     this.root.classList.add('grabbable');
+
+    this._dragging = false;
   }
 
   render(deltaT) {
-    // Spin when hovered
-    if (this._hovered) {
+    // Spin when hovered or dragging
+    if (this._hovered || this._dragging) {
       this.rpm += (this.maxRpm - this.rpm) / 3;
     } else {
       this.rpm = this.rpm * 0.9;
