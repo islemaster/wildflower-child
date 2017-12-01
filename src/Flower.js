@@ -3,7 +3,7 @@ import randomColor from 'randomcolor';
 import {shuffle} from 'shuffle-seed';
 import * as SVG from './SVG';
 
-class Genome {
+export class Genome {
   // A flower genome is a series of 0-255 values stored as a two-character
   // hex string, which each represent a 0-1 range used in place of a
   // Math.random() call, or in some cases, passed as a integer to randomColor.

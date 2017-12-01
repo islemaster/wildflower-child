@@ -1,9 +1,11 @@
 import _ from 'lodash';
 import * as SVG from './SVG';
+import Board from './Board';
 import Camera from './Camera';
-import Flower from './Flower';
+import Flower, {Genome} from './Flower';
 
 const entities = [];
+let board = null;
 
 function onDOMContentLoaded() {
   document.removeEventListener('DOMContentLoaded', onDOMContentLoaded);
@@ -12,30 +14,17 @@ function onDOMContentLoaded() {
 
   entities.push(new Camera());
 
-  for (var i = 0; i < 5; i++) {
-    const y = -80 + 40 * i;
-    const leftFlower = new Flower();
-    leftFlower.x = -50;
-    leftFlower.y = y;
-    entities.push(leftFlower);
+  board = new Board();
 
-    const rightFlower = new Flower();
-    rightFlower.x = 50;
-    rightFlower.y = y;
-    entities.push(rightFlower);
-
-    const mergedFlower = new Flower(leftFlower.genome.mix(rightFlower.genome));
-    mergedFlower.y = y;
-    entities.push(mergedFlower);
-  }
-  // const flowerCount = 25;
-  // for (let i = 0; i < flowerCount; i++) {
-  //   const flower = new Flower();
-  //   flower.x = -80 + (i % 5) * (200 / 5);
-  //   flower.y = -80 + Math.floor(i / 5) * (200 / 5);
-  //   flower.rpm = Math.round(-20 + Math.random() * 40);
-  //   entities.push(flower);
-  // }
+  let lastGenome = new Genome();
+  board.forEachCell(({x, y, z}) => {
+    const flower = new Flower(new Genome().mix(lastGenome));
+    lastGenome = flower.genome;
+    const center = board.center({x, y, z});
+    flower.x = center.x;
+    flower.y = center.y;
+    entities.push(flower);
+  });
 
   // Start the render loop
   window.requestAnimationFrame(render);

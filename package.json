@@ -13,6 +13,7 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-es2016": "^6.24.1",
     "clean-webpack-plugin": "^0.1.17",
+    "immutable": "^3.8.2",
     "lodash": "^4.17.4",
     "randomcolor": "^0.5.3",
     "shuffle-seed": "^1.1.6",

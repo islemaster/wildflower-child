@@ -3,7 +3,7 @@ import * as SVG from './SVG';
 export default class Camera {
   constructor() {
     this.center = [0, 0];
-    this.radius = 100;
+    this.radius = 150;
     this.dirty = true;
 
     // Listen for window resize events to to trigger a camera update
