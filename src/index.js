@@ -1,7 +1,6 @@
-import * as SVG from './SVG';
-import Board, {DIRECTIONS, scale} from './Board';
+import Board from './Board';
 import Camera from './Camera';
-import Flower, {Genome} from './Flower';
+import * as SVG from './SVG';
 
 const entities = [];
 let board = null;

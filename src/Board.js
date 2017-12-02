@@ -1,5 +1,6 @@
 import {Map} from 'immutable';
-import Flower, {Genome} from './Flower';
+import Flower from './Flower';
+import Genome from './Genome';
 import * as SVG from './SVG';
 
 const SQRT3 = Math.sqrt(3);
@@ -204,7 +205,7 @@ export default class Board {
       if (parents.length >= 2) {
         newFlowers.push({
           location: adjacent,
-          flower: new Flower(Genome.mix(parents))
+          flower: new Flower(Genome.mix(parents.map(p => p.genome)))
         });
       }
     });
