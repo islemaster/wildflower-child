@@ -86,11 +86,11 @@ export default class Flower {
     this.root.appendChild(this.center);
 
     // Bind event handlers
-    this._onDrag = this.onDrag.bind(this);
-    this._onDrop = this.onDrop.bind(this);
+    this._onMouseMove = this.onMouseMove.bind(this);
+    this._onMouseUp = this.onMouseUp.bind(this);
     this._onTouchCancel = this.onTouchCancel.bind(this);
-    this._onTouchDrag = this.onTouchDrag.bind(this);
-    this._onTouchDrop = this.onTouchDrop.bind(this);
+    this._onTouchMove = this.onTouchMove.bind(this);
+    this._onTouchUp = this.onTouchUp.bind(this);
 
     // Attach event handlers
     this.root.addEventListener('mouseenter', this.onMouseEnter.bind(this), false);
@@ -131,53 +131,54 @@ export default class Flower {
   }
 
   onMouseDown() {
-    this._originalTargetCell = this._currentCell;
-
-    this._dragging = true;
-
-    this.root.classList.add('grabbed');
-    this.root.classList.remove('grabbable');
-
-    // Re-append element so it sorts above other elements while dragging
-    SVG.addToRoot(this.root);
-
-    document.addEventListener('mousemove', this._onDrag);
-    document.addEventListener('mouseup', this._onDrop);
+    document.addEventListener('mousemove', this._onMouseMove, false);
+    document.addEventListener('mouseup', this._onMouseUp, false);
+    this.onDragStart();
   }
 
-  onDrag(event) {
-    const mousePosition = SVG.getSVGMousePosition(event);
-    const targetCell = this.board.cellFromPoint(mousePosition);
-
-    // If cell is occupied or out of bounds, stay on the last spot we snapped
-    // to.  Otherwise, snap to the new spot.
-    if (!Map(targetCell).equals(Map(this._currentCell))
-      && this.board.isInBounds(targetCell)
-      && !this.board.get(targetCell)) {
-      this.board.set(targetCell, this);
-    }
+  onMouseMove(event) {
+    this.onDragMove(event);
   }
 
-  onDrop() {
-    document.removeEventListener('mousemove', this._onDrag);
-    document.removeEventListener('mouseup', this._onDrop);
-
-    this.root.classList.remove('grabbed');
-    this.root.classList.add('grabbable');
-
-    this._dragging = false;
-
-    // If we dropped a flower at a new position, report that we made a move
-    // and generate new flowers
-    if (!Map(this._originalTargetCell).equals(Map(this._currentCell))) {
-      this.board.resolveMoveAt(this._currentCell);
-    }
+  onMouseUp() {
+    this.onDragDrop();
+    document.removeEventListener('mousemove', this._onMouseMove);
+    document.removeEventListener('mouseup', this._onMouseUp);
   }
 
   onTouchStart(event) {
     event.preventDefault();
-    this._originalTargetCell = this._currentCell;
+    document.addEventListener('touchmove', this._onTouchMove, false);
+    document.addEventListener('touchend', this._onTouchUp, false);
+    document.addEventListener('touchcancel', this._onTouchCancel, false);
+    this.onDragStart();
+  }
 
+  onTouchMove(event) {
+    this.onDragMove(event.touches[0]);
+  }
+
+  onTouchUp(event) {
+    event.preventDefault();
+    this.onDragDrop();
+    document.removeEventListener('touchmove', this._onTouchMove);
+    document.removeEventListener('touchend', this._onTouchUp);
+    document.removeEventListener('touchcancel', this._onTouchCancel);
+  }
+
+  onTouchCancel() {
+    event.preventDefault();
+    this.onDragCancel();
+    document.removeEventListener('touchmove', this._onTouchMove);
+    document.removeEventListener('touchend', this._onTouchUp);
+    document.removeEventListener('touchcancel', this._onTouchCancel);
+  }
+
+  /**
+   * Begin moving a flower (common to mouse and touch)
+   */
+  onDragStart() {
+    this._originalTargetCell = this._currentCell;
     this._dragging = true;
 
     this.root.classList.add('grabbed');
@@ -185,15 +186,14 @@ export default class Flower {
 
     // Re-append element so it sorts above other elements while dragging
     SVG.addToRoot(this.root);
-
-    document.addEventListener("touchmove", this._onTouchDrag, false);
-    document.addEventListener("touchend", this._onTouchDrop, false);
-    document.addEventListener("touchcancel", this._onTouchCancel, false);
   }
 
-  onTouchDrag(event) {
-    const mousePosition = SVG.getSVGMousePosition(event.touches[0]);
-    const targetCell = this.board.cellFromPoint(mousePosition);
+  /**
+   * Move a flower (common to mouse and touch)
+   */
+  onDragMove(interactionEvent) {
+    const newPosition = SVG.getSVGMousePosition(interactionEvent);
+    const targetCell = this.board.cellFromPoint(newPosition);
 
     // If cell is occupied or out of bounds, stay on the last spot we snapped
     // to.  Otherwise, snap to the new spot.
@@ -204,16 +204,11 @@ export default class Flower {
     }
   }
 
-  onTouchDrop(event) {
-    event.preventDefault();
-    document.removeEventListener("touchmove", this._onTouchDrag);
-    document.removeEventListener("touchend", this._onTouchDrop);
-    document.removeEventListener("touchcancel", this._onTouchCancel);
-
-    this.root.classList.remove('grabbed');
-    this.root.classList.add('grabbable');
-
-    this._dragging = false;
+  /**
+   * Drop a flower in a new location (common to mouse and touch)
+   */
+  onDragDrop() {
+    this.onDragEnd();
 
     // If we dropped a flower at a new position, report that we made a move
     // and generate new flowers
@@ -222,20 +217,26 @@ export default class Flower {
     }
   }
 
-  onTouchCancel() {
-    event.preventDefault();
-    document.removeEventListener("touchmove", this._onTouchDrag);
-    document.removeEventListener("touchend", this._onTouchDrop);
-    document.removeEventListener("touchcancel", this._onTouchCancel);
-
-    this.root.classList.remove('grabbed');
-    this.root.classList.add('grabbable');
-
-    this._dragging = false;
+  /**
+   * Stop moving a flower and return it to its original position without
+   * making a move.
+   */
+  onDragCancel() {
+    this.onDragEnd();
 
     // As a cancel event, we want to return the flower to its original position
     // and _not_ resolve a move.
     this.board.set(this._originalTargetCell, this);
+  }
+
+  /**
+   * Cleanup used when we stop moving a flower, whether we've dropped it in a
+   * new location or we've cancelled our move and returned it.
+   */
+  onDragEnd() {
+    this.root.classList.remove('grabbed');
+    this.root.classList.add('grabbable');
+    this._dragging = false;
   }
 
   pulse() {
