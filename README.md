@@ -1,4 +1,4 @@
-# Wildflower Child
+# Wildflower Child ![Travis CI Status](https://api.travis-ci.org/islemaster/wildflower-child.svg?branch=master)
 
 ![Screenshot of Wildflower Child Game](img/Wildflower-Child-1.0-512.png)
 
