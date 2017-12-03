@@ -6,7 +6,10 @@ module.exports = {
   entry: './src/index.js',
 
   plugins: [
-    new CleanWebpackPlugin(['dist/bundle.js']),
+    new CleanWebpackPlugin([
+      'dist/bundle.js',
+      'dist/bundle.js.map'
+    ]),
   ],
 
   output: {
