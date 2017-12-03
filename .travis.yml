@@ -1,0 +1,14 @@
+language: node_js
+node_js: 8
+cache: yarn
+script:
+- yarn build
+before_deploy:
+  - zip --junk-paths dist/wildflower-child.zip dist/*
+deploy:
+  provider: releases
+  api_key:
+    secure: M8ja68QTzuM3UyZZCLvLBV8nyiKT2gszfrux2kFKMAzU6ngkrYIa5qJYTKUe5kTLc/K8Mf3s+aFVmTos/iSLJ0G02e5MfxTx0wKKCX5reUIuMgmtaRkdlGslQjoAEpeWWZ8GK4MgMUrU+CO3/ZIN/FWngWa2Ng4SCJulvxpvxH3PNL0uAfKA5bdqQsLN0/NwW8I0TzsYWLkTrMapxOJj46WUvEYg3ULSRYzkSHuCdyXFgr5TXQJGNX+UHql5b2inXzEl4r2ypBWu6BikREv0vIlVdb9ajT2sGwtKRhzJWBlToyGEUQ2yrQuNNk6uHGA3KeGVV9FNYU/W/Si1Dv3cnJSKExoSYNtPI8X0xbfpN45CipL84AfYrJuDgjQ9Wl9h7RCOXVLmevuinwqAGv5RfelN/xgbcjxOjae5ds6A5PAqFnq+7q1nnGQDVm7M50WASu34RzAh7v4UBgzzgPLX6Z79QfacQAhe4FdYjt1aLyjpmDFb3r4Y//kiy4/71ehqwKopLBHgJs/hAH0iiQ0TNQ4tUg0kF0Ls2Z5Dwu05dMjU7p8cRVmgkBbmIl1s6J1DTuYOWwYhOJ3iA4u0IMYaKk0B2B3PcYM4yloXq9yJlaYwV3Iq4Lh0pODELFmgbxNf+gtdwk1g6u2Ao7cttxqFIW7o0Hh+a+uAgPah/1zbwGE=
+  file: dist/wildflower-child.zip
+  on:
+    repo: islemaster/wildflower-child
