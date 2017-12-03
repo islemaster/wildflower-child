@@ -1,6 +1,6 @@
 {
   "name": "wildflower-chid",
-  "version": "1.0.2",
+  "version": "1.0.3-attempt.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
