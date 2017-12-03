@@ -147,6 +147,8 @@ export default class Flower {
   }
 
   onTouchStart(event) {
+    if (this._dragging) { return; }
+    this._firstTouch = event.touches[0];
     event.preventDefault();
     document.addEventListener('touchmove', this._onTouchMove, false);
     document.addEventListener('touchend', this._onTouchUp, false);
@@ -155,15 +157,23 @@ export default class Flower {
   }
 
   onTouchMove(event) {
-    this.onDragMove(event.touches[0]);
+    const touch = Object.values(event.changedTouches)
+      .find(t => t.identifier === this._firstTouch.identifier);
+    if (touch) {
+      this.onDragMove(touch);
+    }
   }
 
   onTouchUp(event) {
     event.preventDefault();
-    this.onDragDrop();
-    document.removeEventListener('touchmove', this._onTouchMove);
-    document.removeEventListener('touchend', this._onTouchUp);
-    document.removeEventListener('touchcancel', this._onTouchCancel);
+    const touch = Object.values(event.changedTouches)
+      .find(t => t.identifier === this._firstTouch.identifier);
+    if (touch) {
+      this.onDragDrop();
+      document.removeEventListener('touchmove', this._onTouchMove);
+      document.removeEventListener('touchend', this._onTouchUp);
+      document.removeEventListener('touchcancel', this._onTouchCancel);
+    }
   }
 
   onTouchCancel() {
